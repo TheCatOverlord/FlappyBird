@@ -1,5 +1,6 @@
 /* Flappy bird
 // TODO
+// - Continue with sphere collisons
 // - add death animation
 */ 
 
@@ -28,6 +29,8 @@ typedef struct Player
     Vector2 velocity;
     Vector2 colliderPos;
     Vector2 colliderSize;
+    // Sphere Collider
+    float colliderOffset;
     int colliderRadius;
     int jumpForce;
     // misc
@@ -118,25 +121,65 @@ void CheckCollisions(void)
     if (bird.usingSphere)
     {
         bird.isColliding = false;
-        if (CheckCollisionCircleRec( bird.pos, bird.colliderRadius,
+        floorData.isColliding = false;
+
+        //DrawCircleLines(bird.pos.x - bird.colliderOffset, bird.pos.y, bird.colliderRadius, GREEN);
+        //DrawCircleLines(bird.pos.x + bird.colliderOffset, bird.pos.y, bird.colliderRadius, GREEN);
+        //DrawRectangleLines(bird.pos.x - bird.colliderOffset, bird.pos.y - bird.colliderRadius, 2 * bird.colliderOffset, 2 * bird.colliderRadius, GR
+
+        if (CheckCollisionCircleRec( (Vector2) { bird.pos.x - bird.colliderOffset, bird.pos.y }, bird.colliderRadius,
                                 (Rectangle) { floorData.colliderPos.x, floorData.colliderPos.y, floorData.colliderSize.x, floorData.colliderSize.y }))
-                                { bird.isColliding = true; floorData.isColliding = true; bird.isDead = true; } else { floorData.isColliding = false; }
+                                { bird.isColliding = true; floorData.isColliding = true; bird.isDead = true; }
+        if (CheckCollisionCircleRec( (Vector2) { bird.pos.x + bird.colliderOffset, bird.pos.y }, bird.colliderRadius,
+                                (Rectangle) { floorData.colliderPos.x, floorData.colliderPos.y, floorData.colliderSize.x, floorData.colliderSize.y }))
+                                { bird.isColliding = true; floorData.isColliding = true; bird.isDead = true; }
+        if (CheckCollisionRecs( (Rectangle) { bird.pos.x - bird.colliderOffset, bird.pos.y - bird.colliderRadius, 2 * bird.colliderOffset, 2 * bird.colliderRadius },
+                                (Rectangle) { floorData.colliderPos.x, floorData.colliderPos.y, floorData.colliderSize.x, floorData.colliderSize.y }))
+                                { bird.isColliding = true; floorData.isColliding = true; bird.isDead = true; }
+
         for (int i = 0; i < NUM_OF_PIPES; i++)
         {
             // Check bird + top of pipe
-            if (CheckCollisionCircleRec( bird.pos, bird.colliderRadius,
+            pipes[i].isCollidingTop = false;
+            pipes[i].isCollidingBot = false;
+            pipes[i].isCollidingScore = false;
+            if (CheckCollisionCircleRec( (Vector2) { bird.pos.x + bird.colliderOffset, bird.pos.y }, bird.colliderRadius,
                                     (Rectangle) { pipes[i].colliderPosTop.x, pipes[i].colliderPosTop.y, pipes[i].colliderSizeTop.x, pipes[i].colliderSizeTop.y }))
-                                    { pipes[i].isCollidingTop = true; bird.isColliding = true; bird.isDead = true; } else { pipes[i].isCollidingTop = false; }
+                                    { pipes[i].isCollidingTop = true; bird.isColliding = true; bird.isDead = true; }
+            if (CheckCollisionCircleRec( (Vector2) { bird.pos.x + bird.colliderOffset, bird.pos.y }, bird.colliderRadius,
+                                    (Rectangle) { pipes[i].colliderPosTop.x, pipes[i].colliderPosTop.y, pipes[i].colliderSizeTop.x, pipes[i].colliderSizeTop.y }))
+                                    { pipes[i].isCollidingTop = true; bird.isColliding = true; bird.isDead = true;  }
+            if (CheckCollisionRecs( (Rectangle) { bird.pos.x - bird.colliderOffset, bird.pos.y - bird.colliderRadius, 2 * bird.colliderOffset, 2 * bird.colliderRadius },
+                                    (Rectangle) { floorData.colliderPos.x, floorData.colliderPos.y, floorData.colliderSize.x, floorData.colliderSize.y }))
+                                    { pipes[i].isCollidingTop = true; bird.isColliding = true; bird.isDead = true; }
 
             // Check bird + bottom of pipe
-            if (CheckCollisionCircleRec( bird.pos, bird.colliderRadius,
+            // if (CheckCollisionCircleRec( bird.pos, bird.colliderRadius,
+            //                         (Rectangle) { pipes[i].colliderPosBot.x, pipes[i].colliderPosBot.y, pipes[i].colliderSizeBot.x, pipes[i].colliderSizeBot.y }))
+            //                         { pipes[i].isCollidingBot = true; bird.isColliding = true; bird.isDead = true; } else { pipes[i].isCollidingBot = false; }
+            if (CheckCollisionCircleRec( (Vector2) { bird.pos.x + bird.colliderOffset, bird.pos.y }, bird.colliderRadius,
                                     (Rectangle) { pipes[i].colliderPosBot.x, pipes[i].colliderPosBot.y, pipes[i].colliderSizeBot.x, pipes[i].colliderSizeBot.y }))
-                                    { pipes[i].isCollidingBot = true; bird.isColliding = true; bird.isDead = true; } else { pipes[i].isCollidingBot = false; }
+                                    { pipes[i].isCollidingBot = true; bird.isColliding = true; bird.isDead = true; } 
+            if (CheckCollisionCircleRec( (Vector2) { bird.pos.x + bird.colliderOffset, bird.pos.y }, bird.colliderRadius,
+                                    (Rectangle) { pipes[i].colliderPosBot.x, pipes[i].colliderPosBot.y, pipes[i].colliderSizeBot.x, pipes[i].colliderSizeBot.y }))
+                                    { pipes[i].isCollidingBot = true; bird.isColliding = true; bird.isDead = true; } 
+            if (CheckCollisionRecs( (Rectangle) { bird.pos.x - bird.colliderOffset, bird.pos.y - bird.colliderRadius, 2 * bird.colliderOffset, 2 * bird.colliderRadius },
+                                    (Rectangle) { pipes[i].colliderPosBot.x, pipes[i].colliderPosBot.y, pipes[i].colliderSizeBot.x, pipes[i].colliderSizeBot.y }))
+                                    { pipes[i].isCollidingBot = true; bird.isColliding = true; bird.isDead = true; } 
 
             // Check bird + score of pipe
-            if (CheckCollisionCircleRec( bird.pos, bird.colliderRadius,
+            // if (CheckCollisionCircleRec( bird.pos, bird.colliderRadius,
+            //                         (Rectangle) { pipes[i].colliderPosScore.x, pipes[i].colliderPosScore.y, pipes[i].colliderSizeScore.x, pipes[i].colliderSizeScore.y }))
+            //                         { pipes[i].isCollidingScore = true; bird.isColliding = true; if (!pipes[i].isCollected) {bird.score++;} pipes[i].isCollected = true; } else { pipes[i].isCollidingScore = false; }
+            if (CheckCollisionCircleRec( (Vector2) { bird.pos.x + bird.colliderOffset, bird.pos.y }, bird.colliderRadius,
                                     (Rectangle) { pipes[i].colliderPosScore.x, pipes[i].colliderPosScore.y, pipes[i].colliderSizeScore.x, pipes[i].colliderSizeScore.y }))
-                                    { pipes[i].isCollidingScore = true; bird.isColliding = true; if (!pipes[i].isCollected) {bird.score++;} pipes[i].isCollected = true; } else { pipes[i].isCollidingScore = false; }
+                                    { pipes[i].isCollidingScore = true; bird.isColliding = true; if (!pipes[i].isCollected) {bird.score++;} pipes[i].isCollected = true; }
+            if (CheckCollisionCircleRec( (Vector2) { bird.pos.x + bird.colliderOffset, bird.pos.y }, bird.colliderRadius,
+                                    (Rectangle) { pipes[i].colliderPosScore.x, pipes[i].colliderPosScore.y, pipes[i].colliderSizeScore.x, pipes[i].colliderSizeScore.y }))
+                                    { pipes[i].isCollidingScore = true; bird.isColliding = true; if (!pipes[i].isCollected) {bird.score++;} pipes[i].isCollected = true; }
+            if (CheckCollisionRecs( (Rectangle) { bird.pos.x - bird.colliderOffset, bird.pos.y - bird.colliderRadius, 2 * bird.colliderOffset, 2 * bird.colliderRadius },
+                                    (Rectangle) { pipes[i].colliderPosScore.x, pipes[i].colliderPosScore.y, pipes[i].colliderSizeScore.x, pipes[i].colliderSizeScore.y }))
+                                    { pipes[i].isCollidingScore = true; bird.isColliding = true; if (!pipes[i].isCollected) {bird.score++;} pipes[i].isCollected = true; } 
         }
     } else
     {
@@ -336,6 +379,7 @@ int main(void)
     bird.velocity = (Vector2) { 3, 0 };
     bird.colliderSize = (Vector2) { 112 / bird.scale, 68 / bird.scale };
     bird.colliderRadius = 34 / bird.scale;
+    bird.colliderOffset = bird.colliderPos.x + bird.colliderRadius - 5;
     UpdateBirdColliderPos();
 
     // Init the pipes
@@ -345,7 +389,7 @@ int main(void)
     Texture2D textureFlipped = LoadTextureFromImage(imageTmp);
     for (int i = 0; i < NUM_OF_PIPES; i++)
     {
-        pipes[i] = GenPipe(screenWidth + 100 + (i * 5 * worldScale), (rand()% 6 * worldScale) + 2 * worldScale, texture, textureFlipped, 300, 2.0f);
+        pipes[i] = GenPipe(screenWidth + 100 + (i * 5 * worldScale), (rand()% 6 * worldScale) + 2 * worldScale, texture, textureFlipped, 400, 2.0f);
     }
 
     // Init other varibles
@@ -471,8 +515,19 @@ int main(void)
                     {
                         if (bird.usingSphere)
                         {
-                            if (bird.isColliding) DrawCircleLines(bird.pos.x, bird.pos.y, bird.colliderRadius, RED);
-                            else DrawCircleLines(bird.pos.x, bird.pos.y, bird.colliderRadius, GREEN);
+                            if (bird.isColliding) 
+                            {
+                                DrawCircleLines(bird.pos.x - bird.colliderOffset, bird.pos.y, bird.colliderRadius, RED);
+                                DrawCircleLines(bird.pos.x + bird.colliderOffset, bird.pos.y, bird.colliderRadius, RED);
+                                DrawRectangleLines(bird.pos.x - bird.colliderOffset, bird.pos.y - bird.colliderRadius, 2 * bird.colliderOffset, 2 * bird.colliderRadius, RED);
+                            }
+
+                            else 
+                            {
+                                DrawCircleLines(bird.pos.x - bird.colliderOffset, bird.pos.y, bird.colliderRadius, GREEN);
+                                DrawCircleLines(bird.pos.x + bird.colliderOffset, bird.pos.y, bird.colliderRadius, GREEN);
+                                DrawRectangleLines(bird.pos.x - bird.colliderOffset, bird.pos.y - bird.colliderRadius, 2 * bird.colliderOffset, 2 * bird.colliderRadius, GREEN);
+                            }
 
                         } else 
                         {
