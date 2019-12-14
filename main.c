@@ -12,8 +12,16 @@
 // The number of pipes
 #define NUM_OF_PIPES 5
 
+// Distance between pipes 
+#define EASY_HEIGHT 400
+#define MEDIUM_HEIGHT 300
+#define HARD_HEIGHT 200
+
 // ENUM for the current screen
 typedef enum GameScreen { LOGO, TITLE, GAMEPLAY } GameScreen;
+
+// ENUM for difficulty level
+typedef enum Difficulty { EASY, MEDIUM, HARD } Difficulty;
 
 // struct for player data
 typedef struct Player
@@ -95,9 +103,11 @@ Sky sky = { 0 };
 floorDataStruct floorData = { 0 };
 GameScreen screen = { 0 };
 Pipe pipes[NUM_OF_PIPES] = { 0 };
+Difficulty difficulty = MEDIUM;
 bool debug = false;
 int worldScale = 60; // how many pixels per meter
 int frameCounter = 0; 
+int highScore;
 
 // Function to update the birds animation
 void UpdateBirdAnimation(void)
@@ -110,6 +120,9 @@ void UpdateBirdAnimation(void)
         { bird.currentTexture = 1; }
     } else bird.currentTexture = 2;
 }
+
+void SetHighScore(void)
+{ if (bird.score > highScore) highScore = bird.score; }
 
 // Update the bird collider position to a new location
 void UpdateBirdColliderPos(void)
@@ -129,13 +142,13 @@ void CheckCollisions(void)
 
         if (CheckCollisionCircleRec( (Vector2) { bird.pos.x - bird.colliderOffset, bird.pos.y }, bird.colliderRadius,
                                 (Rectangle) { floorData.colliderPos.x, floorData.colliderPos.y, floorData.colliderSize.x, floorData.colliderSize.y }))
-                                { bird.isColliding = true; floorData.isColliding = true; bird.isDead = true; }
+                                { bird.isColliding = true; floorData.isColliding = true; bird.isDead = true; SetHighScore(); }
         if (CheckCollisionCircleRec( (Vector2) { bird.pos.x + bird.colliderOffset, bird.pos.y }, bird.colliderRadius,
                                 (Rectangle) { floorData.colliderPos.x, floorData.colliderPos.y, floorData.colliderSize.x, floorData.colliderSize.y }))
-                                { bird.isColliding = true; floorData.isColliding = true; bird.isDead = true; }
+                                { bird.isColliding = true; floorData.isColliding = true; bird.isDead = true; SetHighScore(); }
         if (CheckCollisionRecs( (Rectangle) { bird.pos.x - bird.colliderOffset, bird.pos.y - bird.colliderRadius, 2 * bird.colliderOffset, 2 * bird.colliderRadius },
                                 (Rectangle) { floorData.colliderPos.x, floorData.colliderPos.y, floorData.colliderSize.x, floorData.colliderSize.y }))
-                                { bird.isColliding = true; floorData.isColliding = true; bird.isDead = true; }
+                                { bird.isColliding = true; floorData.isColliding = true; bird.isDead = true; SetHighScore(); }
 
         for (int i = 0; i < NUM_OF_PIPES; i++)
         {
@@ -145,13 +158,13 @@ void CheckCollisions(void)
             pipes[i].isCollidingScore = false;
             if (CheckCollisionCircleRec( (Vector2) { bird.pos.x + bird.colliderOffset, bird.pos.y }, bird.colliderRadius,
                                     (Rectangle) { pipes[i].colliderPosTop.x, pipes[i].colliderPosTop.y, pipes[i].colliderSizeTop.x, pipes[i].colliderSizeTop.y }))
-                                    { pipes[i].isCollidingTop = true; bird.isColliding = true; bird.isDead = true; }
+                                    { pipes[i].isCollidingTop = true; bird.isColliding = true; bird.isDead = true; SetHighScore(); }
             if (CheckCollisionCircleRec( (Vector2) { bird.pos.x + bird.colliderOffset, bird.pos.y }, bird.colliderRadius,
                                     (Rectangle) { pipes[i].colliderPosTop.x, pipes[i].colliderPosTop.y, pipes[i].colliderSizeTop.x, pipes[i].colliderSizeTop.y }))
-                                    { pipes[i].isCollidingTop = true; bird.isColliding = true; bird.isDead = true;  }
+                                    { pipes[i].isCollidingTop = true; bird.isColliding = true; bird.isDead = true; SetHighScore(); }
             if (CheckCollisionRecs( (Rectangle) { bird.pos.x - bird.colliderOffset, bird.pos.y - bird.colliderRadius, 2 * bird.colliderOffset, 2 * bird.colliderRadius },
-                                    (Rectangle) { floorData.colliderPos.x, floorData.colliderPos.y, floorData.colliderSize.x, floorData.colliderSize.y }))
-                                    { pipes[i].isCollidingTop = true; bird.isColliding = true; bird.isDead = true; }
+                                    (Rectangle) { pipes[i].colliderPosTop.x, pipes[i].colliderPosTop.y, pipes[i].colliderSizeTop.x, pipes[i].colliderSizeTop.y }))
+                                    { pipes[i].isCollidingTop = true; bird.isColliding = true; bird.isDead = true; SetHighScore(); }
 
             // Check bird + bottom of pipe
             // if (CheckCollisionCircleRec( bird.pos, bird.colliderRadius,
@@ -159,13 +172,13 @@ void CheckCollisions(void)
             //                         { pipes[i].isCollidingBot = true; bird.isColliding = true; bird.isDead = true; } else { pipes[i].isCollidingBot = false; }
             if (CheckCollisionCircleRec( (Vector2) { bird.pos.x + bird.colliderOffset, bird.pos.y }, bird.colliderRadius,
                                     (Rectangle) { pipes[i].colliderPosBot.x, pipes[i].colliderPosBot.y, pipes[i].colliderSizeBot.x, pipes[i].colliderSizeBot.y }))
-                                    { pipes[i].isCollidingBot = true; bird.isColliding = true; bird.isDead = true; } 
+                                    { pipes[i].isCollidingBot = true; bird.isColliding = true; bird.isDead = true; SetHighScore(); } 
             if (CheckCollisionCircleRec( (Vector2) { bird.pos.x + bird.colliderOffset, bird.pos.y }, bird.colliderRadius,
                                     (Rectangle) { pipes[i].colliderPosBot.x, pipes[i].colliderPosBot.y, pipes[i].colliderSizeBot.x, pipes[i].colliderSizeBot.y }))
-                                    { pipes[i].isCollidingBot = true; bird.isColliding = true; bird.isDead = true; } 
+                                    { pipes[i].isCollidingBot = true; bird.isColliding = true; bird.isDead = true; SetHighScore(); } 
             if (CheckCollisionRecs( (Rectangle) { bird.pos.x - bird.colliderOffset, bird.pos.y - bird.colliderRadius, 2 * bird.colliderOffset, 2 * bird.colliderRadius },
                                     (Rectangle) { pipes[i].colliderPosBot.x, pipes[i].colliderPosBot.y, pipes[i].colliderSizeBot.x, pipes[i].colliderSizeBot.y }))
-                                    { pipes[i].isCollidingBot = true; bird.isColliding = true; bird.isDead = true; } 
+                                    { pipes[i].isCollidingBot = true; bird.isColliding = true; bird.isDead = true; SetHighScore(); } 
 
             // Check bird + score of pipe
             // if (CheckCollisionCircleRec( bird.pos, bird.colliderRadius,
@@ -186,18 +199,18 @@ void CheckCollisions(void)
         bird.isColliding = false;
         if (CheckCollisionRecs( (Rectangle) { bird.colliderPos.x, bird.colliderPos.y, bird.colliderSize.x, bird.colliderSize.y },
                                 (Rectangle) { floorData.colliderPos.x, floorData.colliderPos.y, floorData.colliderSize.x, floorData.colliderSize.y }))
-                                { bird.isColliding = true; floorData.isColliding = true; bird.isDead = true; } else { floorData.isColliding = false; }
+                                { bird.isColliding = true; floorData.isColliding = true; bird.isDead = true; SetHighScore(); } else { floorData.isColliding = false; }
         for (int i = 0; i < NUM_OF_PIPES; i++)
         {
             // Check bird + top of pipe
             if (CheckCollisionRecs( (Rectangle) { bird.colliderPos.x, bird.colliderPos.y, bird.colliderSize.x, bird.colliderSize.y },
                                     (Rectangle) { pipes[i].colliderPosTop.x, pipes[i].colliderPosTop.y, pipes[i].colliderSizeTop.x, pipes[i].colliderSizeTop.y }))
-                                    { pipes[i].isCollidingTop = true; bird.isColliding = true; bird.isDead = true; } else { pipes[i].isCollidingTop = false; }
+                                    { pipes[i].isCollidingTop = true; bird.isColliding = true; bird.isDead = true; SetHighScore(); } else { pipes[i].isCollidingTop = false; }
 
             // Check bird + bottom of pipe
             if (CheckCollisionRecs( (Rectangle) { bird.colliderPos.x, bird.colliderPos.y, bird.colliderSize.x, bird.colliderSize.y },
                                     (Rectangle) { pipes[i].colliderPosBot.x, pipes[i].colliderPosBot.y, pipes[i].colliderSizeBot.x, pipes[i].colliderSizeBot.y }))
-                                    { pipes[i].isCollidingBot = true; bird.isColliding = true; bird.isDead = true; } else { pipes[i].isCollidingBot = false; }
+                                    { pipes[i].isCollidingBot = true; bird.isColliding = true; bird.isDead = true; SetHighScore(); } else { pipes[i].isCollidingBot = false; }
 
             // Check bird + score of pipe
             if (CheckCollisionRecs( (Rectangle) { bird.colliderPos.x, bird.colliderPos.y, bird.colliderSize.x, bird.colliderSize.y },
@@ -320,6 +333,21 @@ void Reset()
     
 }
 
+void UpdateDifficulty(void)
+{
+    for (int i = 0; i < NUM_OF_PIPES; i++)
+    {
+        switch (difficulty)
+        {
+            case EASY: { pipes[i].scoreHeight = EASY_HEIGHT; } break;
+            case MEDIUM: { pipes[i].scoreHeight = MEDIUM_HEIGHT; } break;
+            case HARD: { pipes[i].scoreHeight = HARD_HEIGHT; } break;
+            default: break;
+        }
+    }
+    
+}
+
 // Check the position of the pipe and move it so it loops
 void CheckPipePos(void)
 {
@@ -346,8 +374,8 @@ void CheckBirdPos(void)
 int main(void)
 {
     // Init Raylib
-    const int screenWidth = 600;
-    const int screenHeight = 600;
+    const int screenWidth = 900;
+    const int screenHeight = 700;
     srand(time(NULL));
     InitWindow(screenWidth, screenHeight, "Flappy bird");
 
@@ -376,10 +404,11 @@ int main(void)
     bird.pos.y = screenHeight/2;
     bird.currentTexture = 0;
     bird.jumpForce = 5;
-    bird.velocity = (Vector2) { 3, 0 };
+    bird.velocity = (Vector2) { 3, -bird.jumpForce * worldScale };
     bird.colliderSize = (Vector2) { 112 / bird.scale, 68 / bird.scale };
     bird.colliderRadius = 34 / bird.scale;
     bird.colliderOffset = bird.colliderPos.x + bird.colliderRadius - 5;
+    bird.usingSphere = true;
     UpdateBirdColliderPos();
 
     // Init the pipes
@@ -409,7 +438,7 @@ int main(void)
             case LOGO:
             {
                 frameCounter++;
-                if (frameCounter > 180)
+                if (frameCounter > 180 || IsKeyPressed(KEY_SPACE))
                 {
                     screen = TITLE;
                     frameCounter = 0;
@@ -420,7 +449,7 @@ int main(void)
             case TITLE:
             {
                 frameCounter++;
-                if (IsKeyPressed(KEY_ENTER)) { screen = GAMEPLAY; frameCounter = 0; } 
+                if (IsKeyPressed(KEY_SPACE)) { screen = GAMEPLAY; frameCounter = 0; } 
             } break;
 
             // Gameplay screen Updates
@@ -433,6 +462,9 @@ int main(void)
                 if (IsKeyPressed(KEY_D)) debug = !debug;
                 if (IsKeyPressed(KEY_R)) Reset();
                 if (IsKeyPressed(KEY_C)) bird.usingSphere = !bird.usingSphere;
+                if (IsKeyPressed(KEY_ONE)) { difficulty = EASY; UpdateDifficulty(); Reset(); }
+                if (IsKeyPressed(KEY_TWO)) { difficulty = MEDIUM; UpdateDifficulty(); Reset(); }
+                if (IsKeyPressed(KEY_THREE)) { difficulty = HARD; UpdateDifficulty(); Reset(); }
                 // if the game isnt paused
                 if (!paused)
                 {
@@ -473,14 +505,24 @@ int main(void)
                 // Logo screen draw
                 case LOGO:
                 {
-                    DrawText("FireWire.dev", 20, 20, 20, LIGHTGRAY);
+                    DrawTextureEx(sky.texture, sky.pos, 0.0f, 1.0f, WHITE);
+                    DrawTextureEx(sky.texture, (Vector2) { sky.pos.x + sky.texture.width, sky.pos.y }, 0.0f, 1.0f, WHITE);
+                    DrawTextureEx(floorData.texture, floorData.pos, 0.0f, 1.0f, WHITE);
+                    DrawTextureEx(floorData.texture, (Vector2) { floorData.pos.x + floorData.texture.width, floorData.pos.y }, 0.0f, 1.0f, WHITE);
+                    DrawTextureEx(bird.idle, (Vector2) { bird.pos.x - bird.centerOffset.x, bird.pos.y - bird.centerOffset.y }, 0.0f, 1.0f / bird.scale, WHITE); 
+                    DrawText("FireWire.dev", 20, 20, 20, BLACK);
                 } break;
 
                 // Title screen draw
                 case TITLE:
                 {
+                    DrawTextureEx(sky.texture, sky.pos, 0.0f, 1.0f, WHITE);
+                    DrawTextureEx(sky.texture, (Vector2) { sky.pos.x + sky.texture.width, sky.pos.y }, 0.0f, 1.0f, WHITE);
+                    DrawTextureEx(floorData.texture, floorData.pos, 0.0f, 1.0f, WHITE);
+                    DrawTextureEx(floorData.texture, (Vector2) { floorData.pos.x + floorData.texture.width, floorData.pos.y }, 0.0f, 1.0f, WHITE);
+                    DrawTextureEx(bird.idle, (Vector2) { bird.pos.x - bird.centerOffset.x, bird.pos.y - bird.centerOffset.y }, 0.0f, 1.0f / bird.scale, WHITE); 
                     DrawText("Flappy Bird", screenWidthRT/2 - MeasureText("Flappy Bird", 40)/2, screenHeightRT / 2, 40, GRAY);
-                    if ((frameCounter/30)%2 == 0) DrawText("PRESS [ENTER] to START", screenWidthRT/2 - MeasureText("PRESS [ENTER] to START", 20)/2, screenHeightRT/2 + 60, 20, DARKGRAY);
+                    if ((frameCounter/30)%2 == 0) DrawText("PRESS [SPACE] to START", screenWidthRT/2 - MeasureText("PRESS [SPACE] to START", 20)/2, screenHeightRT/2 + 60, 20, DARKGRAY);
                 } break;
 
                 // Gameplay screen draw
@@ -508,7 +550,7 @@ int main(void)
                         default: break;
                     }
                     // Draw score
-                    DrawText(TextFormat("Score: %d", bird.score), 20, 20, 15, WHITE);
+                    if (!bird.isDead) DrawText(TextFormat("Score: %d", bird.score), 20, GetScreenHeight() - 30 , 20, WHITE);
 
                     // Draw colliders 
                     if (debug)
@@ -551,10 +593,18 @@ int main(void)
                             else DrawRectangleLines(pipes[i].colliderPosScore.x, pipes[i].colliderPosScore.y, pipes[i].colliderSizeScore.x, pipes[i].colliderSizeScore.y, GREEN);
                         }
                     }
+                    switch (difficulty)
+                    {
+                        case EASY: { DrawText("Difficulty: EASY", 20, 20, 20, WHITE); } break;
+                        case MEDIUM: { DrawText("Difficulty: MEDIUM", 20, 20, 20, WHITE); } break;
+                        case HARD: { DrawText("Difficulty: HARD", 20, 20, 20, WHITE); } break;
+                    
+                        default: break;
+                    }
                     // Draw the paused text
-                    if (paused && !bird.isDead) DrawText("PAUSED", screenWidthRT / 2 - MeasureText("PAUSED", 40) / 2, screenHeightRT/2, 40, LIGHTGRAY );
+                    if (paused && !bird.isDead) DrawText("PAUSED", screenWidthRT / 2 - MeasureText("PAUSED", 40) / 2, screenHeightRT/2, 40, BLACK );
                     // Draw the death text
-                    if (bird.isDead) DrawText("You've died!", screenWidthRT / 2 - MeasureText("You've died!", 40) / 2, screenHeightRT/2, 40, LIGHTGRAY );
+                    if (bird.isDead) DrawText(TextFormat("High score: %d", highScore), screenWidthRT / 2 - MeasureText(TextFormat("High score: %d", highScore), 40) / 2, screenHeightRT/2, 40, BLACK );
                 } break;
                 default: break;
             }
