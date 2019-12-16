@@ -1,6 +1,5 @@
 /* Flappy bird
 // TODO
-// - Continue with sphere collisons
 // - add death animation
 */ 
 
@@ -114,9 +113,9 @@ void UpdateBirdAnimation(void)
 {
     if (!bird.isDead)
     {
-        if ((frameCounter/10)%2 == 0)
+        if ((frameCounter/5)%2 == 0)
         { bird.currentTexture = 0; }
-        if ((frameCounter/10)%2 == 1)
+        if ((frameCounter/5)%2 == 1)
         { bird.currentTexture = 1; }
     } else bird.currentTexture = 2;
 }
@@ -374,7 +373,7 @@ void CheckBirdPos(void)
 int main(void)
 {
     // Init Raylib
-    const int screenWidth = 900;
+    const int screenWidth = 700;
     const int screenHeight = 700;
     srand(time(NULL));
     InitWindow(screenWidth, screenHeight, "Flappy bird");
